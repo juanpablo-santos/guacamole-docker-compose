@@ -1,10 +1,10 @@
 # Guacamole with docker-compose
-This is a small documentation how to run a fully working **Apache Guacamole (incubating)** instance with docker (docker-compose). The goal of this project is to make it easy to test Guacamole.
+This is a small documentation how to run a fully working **Apache Guacamole** instance with docker (docker-compose). The goal of this project is to make it easy to test Guacamole.
 
 ## About Guacamole
-Apache Guacamole (incubating) is a clientless remote desktop gateway. It supports standard protocols like VNC, RDP, and SSH. It is called clientless because no plugins or client software are required. Thanks to HTML5, once Guacamole is installed on a server, all you need to access your desktops is a web browser.
+Apache Guacamole is a clientless remote desktop gateway. It supports standard protocols like VNC, RDP, and SSH. It is called clientless because no plugins or client software are required. Thanks to HTML5, once Guacamole is installed on a server, all you need to access your desktops is a web browser.
 
-It supports RDP, SSH, Telnet and VNC and is the fastest HTML5 gateway I know. Checkout the projects [homepage](https://guacamole.incubator.apache.org/) for more information.
+It supports RDP, SSH, Telnet and VNC and is the fastest HTML5 gateway I know. Checkout the projects [homepage](https://guacamole.apache.org/) for more information.
 
 ## Prerequisites
 You need a working **docker** installation and **docker-compose** running on your machine.
@@ -13,13 +13,14 @@ You need a working **docker** installation and **docker-compose** running on you
 Clone the GIT repository and start guacamole:
 
 ~~~bash
-git clone "https://github.com/boschkundendienst/guacamole-docker-compose.git"
+git clone "https://github.com/juanpablo-santos/guacamole-docker-compose.git"
 cd guacamole-docker-compose
 ./prepare.sh
+docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgres > ./init/initdb.sql
 docker-compose up -d
 ~~~
 
-Your guacamole server should now be available at `https://ip of your server:8443/`. The default username is `guacadmin` with password `guacadmin`.
+Your guacamole server should now be available at `https://ip of your server:59000/`. The default username is `guacadmin` with password `guacadmin`.
 
 ## Details
 To understand some details let's take a closer look at parts of the `docker-compose.yml` file:
@@ -57,7 +58,7 @@ services:
 ~~~
 
 #### PostgreSQL
-The following part of docker-compose.yml will create an instance of PostgreSQL using the official docker image. This image is highly configurable using environment variables. It will for example initialize a database if an initialization script is found in the folder `/docker-entrypoint-initdb.d` within the image. Since we map the local folder `./init` inside the container as `docker-entrypoint-initdb.d` we can initialize the database for guacamole using our own script (`./init/initdb.sql`). You can read more about the details of the official postgres image [here](http://).
+The following part of docker-compose.yml will create an instance of PostgreSQL using the official docker image. This image is highly configurable using environment variables. It will for example initialize a database if an initialization script is found in the folder `/docker-entrypoint-initdb.d` within the image. Since we map the local folder `./init` inside the container as `docker-entrypoint-initdb.d` we can initialize the database for guacamole using our own script (`./init/initdb.sql`). You can read more about the details of the official postgres image [here](https://hub.docker.com/_/postgres).
 
 ~~~python
 ...
@@ -79,7 +80,7 @@ The following part of docker-compose.yml will create an instance of PostgreSQL u
 ~~~
 
 #### Guacamole
-The following part of docker-compose.yml will create an instance of guacamole by using the docker image `guacamole` from docker hub. It is also highly configurable using environment variables. In this setup it is configured to connect to the previously created postgres instance using a username and password and the database `guacamole_db`. Port 8080 is only exposed locally! We will attach an instance of nginx for public facing of it in the next step.
+The following part of docker-compose.yml will create an instance of guacamole by using the docker image `guacamole` from docker hub. It is also highly configurable using environment variables. In this setup it is configured to connect to the previously created postgres instance using a username and password and the database `guacamole_db`. Port 8080 is exposed through 59000, but you can change that by editing the [appropiate line](https://github.com/juanpablo-santos/guacamole-docker-compose/blob/master/docker-compose.yml#L136) on docker-compose.yml
 
 ~~~python
 ...
@@ -106,6 +107,9 @@ The following part of docker-compose.yml will create an instance of guacamole by
 ~~~
 
 #### nginx
+
+**This part has been commented out on the `docker-compose.yml` file, getting browsers to load pages behind self-signed certificates get's being tricky nowadays. Check  out the [original repo](https://github.com/boschkundendienst/guacamole-docker-compose) if you want to get this going.**
+
 The following part of docker-compose.yml will create an instance of nginx that maps the public port 8443 to the internal port 443. The internal port 443 is then mapped to guacamole using the `./nginx.conf` and `./nginx/mysite.template` files. Also the generation of this container will create a self-signed certificate in `./nginx/ssl/` with `./nginx/ssl/self-ssl.key` and `./nginx/ssl/self.cert`.
 
 ~~~python
