@@ -20,7 +20,7 @@ docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgres > ./
 docker-compose up -d
 ~~~
 
-Your guacamole server should now be available at `https://ip of your server:59000/`. The default username is `guacadmin` with password `guacadmin`.
+Your guacamole server should now be available at `http://ip of your server:59000/`. The default username is `guacadmin` with password `guacadmin`.
 
 ## Details
 To understand some details let's take a closer look at parts of the `docker-compose.yml` file:
